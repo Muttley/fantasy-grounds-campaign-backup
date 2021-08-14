@@ -1,0 +1,10 @@
+{
+	"FantasyGrounds": {
+		"Directory": "/mnt/c/Users/Muttley/AppData/Roaming/Fantasy\\ Grounds/campaigns",
+		"DirectoryMatch": "\\(.+\\)$"
+	},
+	"FantasyGroundsUnity": {
+		"Directory": "/mnt/c/Users/Muttley/AppData/Roaming/SmiteWorks/Fantasy\\ Grounds/campaigns",
+		"DirectoryMatch": "\\(.+\\)$"
+	}
+}
