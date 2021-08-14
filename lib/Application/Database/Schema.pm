@@ -10,7 +10,7 @@ use namespace::clean -except => [qw(meta)];
 sub UPGRADE_TO_1 {
 	return q(BEGIN TRANSACTION;
 
-CREATE TABLE campaign (
+CREATE TABLE campaigns (
 	id       INTEGER PRIMARY KEY AUTOINCREMENT,
 	base_dir TEXT NOT NULL,
 	name     TEXT NOT NULL,
@@ -27,7 +27,8 @@ CREATE TABLE files (
 	hash        TEXT NOT NULL,
 
 	UNIQUE(campaign_id, file_path)
-)
+);
+
 COMMIT;
 );
 }

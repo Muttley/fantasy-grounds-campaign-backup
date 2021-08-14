@@ -1,5 +1,8 @@
 package Application::Cache;
 
+use v5.20;
+use feature qw(signatures);
+
 use common::sense;
 
 use Data::Dump qw(pp);
@@ -13,7 +16,7 @@ use namespace::clean -except => [qw(meta)];
 
 has 'dir' => (
 	is       => 'ro',
-	isa      => 'Str',
+	isa      => 'Path::Class::Dir',
 	required => 1,
 );
 
@@ -23,19 +26,22 @@ has 'db' => (
 	default  => sub {
 		my $self = shift;
 		return Application::Database->new({
-			data_dir => dir($self->dir),
+			data_dir => $self->dir,
 			trace_db => 0,
 		})
 	},
 	lazy => 1
 );
 
-sub test {
-	my $self = shift;
+sub get_campaign ($self, $name, $dir) {
 
-	my $db = $self->db->dbh;
+	my $campaign = $self->db->get_campaign($name);
 
-	INFO "TESTING";
+	unless ($campaign) {
+		$campaign = $self->db->add_campaign($name, $dir)
+	}
+
+	return $campaign;
 }
 
 __PACKAGE__->meta->make_immutable;

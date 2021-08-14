@@ -17,7 +17,7 @@ use Log::Log4perl qw(:easy);
 use Application::Backup;
 
 Readonly our $DEFAULT_CONFIG_FILE => "$RealBin/config.json";
-Readonly our $DEFAULT_BACKUP_DIR  => '/mnt/s/Dropbox/Games/Role-Playing\ Games/.Campaigns/.backups';
+Readonly our $DEFAULT_BACKUP_DIR  => 'S:\Dropbox\Games\Role-Playing Games\.Campaigns\.backups';
 
 our $program = fileparse ($PROGRAM_NAME);
 
@@ -43,6 +43,23 @@ sub main {
 		layout => '%d{ISO8601} [%5p] (%c) %m%n',
 	});
 
+	# Capture and log all fatal errors to our own logger.
+
+	$SIG{__DIE__} = sub {
+		if ($^S) {    # We're in an eval {}
+			return;
+		}
+		$Log::Log4perl::caller_depth++;
+		my $logger = get_logger("");
+		$logger->fatal(@_);
+		die @_;       # Now really terminate.
+	};
+
+	# $SIG{__WARN__} = sub {
+	# 	local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
+	# 	WARN @_;
+	# };
+
 	TRACE "Loading config file: $options->{config_file}";
 
 	my $config_file = file($options->{config_file});
@@ -58,7 +75,7 @@ sub main {
 	}
 
 	Application::Backup->new({
-		backup_dir => $options->{backup_dir},
+		backup_dir => dir($options->{backup_dir}),
 		config     => $config,
 	})->run;
 

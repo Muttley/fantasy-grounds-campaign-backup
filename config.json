@@ -1,10 +1,10 @@
 {
-	"FantasyGrounds": {
-		"Directory": "/mnt/c/Users/Muttley/AppData/Roaming/Fantasy\\ Grounds/campaigns",
-		"DirectoryMatch": "\\(.+\\)$"
+	"Fantasy Grounds": {
+		"Directory": "C:\\Users\\Muttley\\AppData\\Roaming\\Fantasy Grounds\\campaigns",
+		"SkipDirectoryMatch": "\\(test\\)$"
 	},
-	"FantasyGroundsUnity": {
-		"Directory": "/mnt/c/Users/Muttley/AppData/Roaming/SmiteWorks/Fantasy\\ Grounds/campaigns",
-		"DirectoryMatch": "\\(.+\\)$"
+	"Fantasy Grounds Unity": {
+		"Directory": "C:\\Users\\Muttley\\AppData\\Roaming\\SmiteWorks\\Fantasy Grounds\\campaigns",
+		"SkipDirectoryMatch": "\\(test\\)$"
 	}
 }
