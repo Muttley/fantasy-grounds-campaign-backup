@@ -39,7 +39,7 @@ sub main {
 
 	Log::Log4perl->easy_init({
 		level  => $options->{verbose} ? $TRACE : $INFO,
-		file   => ">>$RealBin/fg-backup.log",
+		file   => ">>$RealBin/../log/fg-backup.log",
 		layout => '%d{ISO8601} [%5p] (%c) %m%n',
 	});
 
