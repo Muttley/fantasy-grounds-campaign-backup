@@ -16,7 +16,7 @@ use Log::Log4perl qw(:easy);
 
 use Application::Backup;
 
-Readonly our $DEFAULT_CONFIG_FILE => "$RealBin/config.json";
+Readonly our $DEFAULT_CONFIG_FILE => "$RealBin/../conf/config.json";
 Readonly our $DEFAULT_BACKUP_DIR  => 'S:\Dropbox\Games\Role-Playing Games\.Campaigns\.backups';
 
 our $program = fileparse ($PROGRAM_NAME);
