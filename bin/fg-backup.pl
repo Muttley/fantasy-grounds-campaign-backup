@@ -4,7 +4,7 @@ use common::sense;
 
 use English qw( -no_match_vars );
 use FindBin qw($RealBin);
-use lib "$RealBin/lib";
+use lib "$RealBin/../lib";
 
 use Data::Dump qw(pp);
 use File::Basename;
