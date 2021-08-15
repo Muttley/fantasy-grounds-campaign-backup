@@ -168,40 +168,6 @@ sub _insert_object {
 	return $new_object || undef;
 }
 
-sub _update_object {
-	my ($self, $table, $object, $where) = @_;
-
-	my @fields;
-	my @values;
-	for my $key (sort keys %{$object}) {
-		push @fields, "$key=?";
-
-		if (looks_like_number ($object->{$key})) {
-			push @values, $object->{$key} * 1.0
-		}
-		else {
-			push @values, $object->{$key} || "";
-		}
-	}
-
-	my $all_fields   = join (", ", @fields);
-
-	my $statement = "update $table set $all_fields";
-
-	if ($where) {
-		my $where_field = (keys %{$where})[0];
-		$statement .= " where $where_field=?";
-		push @values, $where->{$where_field};
-	}
-
-	my $sth = $self->_run_query(
-		$statement,
-		@values
-	);
-
-	return $sth;
-}
-
 sub _run_query {
 	my ($self, $statement, @values) = @_;
 
@@ -244,6 +210,40 @@ sub _selectone_arrayref_hashes {
 	)->[0];
 
 	return $result;
+}
+
+sub _update_object {
+	my ($self, $table, $object, $where) = @_;
+
+	my @fields;
+	my @values;
+	for my $key (sort keys %{$object}) {
+		push @fields, "$key=?";
+
+		if (looks_like_number ($object->{$key})) {
+			push @values, $object->{$key} * 1.0
+		}
+		else {
+			push @values, $object->{$key} || "";
+		}
+	}
+
+	my $all_fields   = join (", ", @fields);
+
+	my $statement = "update $table set $all_fields";
+
+	if ($where) {
+		my $where_field = (keys %{$where})[0];
+		$statement .= " where $where_field=?";
+		push @values, $where->{$where_field};
+	}
+
+	my $sth = $self->_run_query(
+		$statement,
+		@values
+	);
+
+	return $sth;
 }
 
 sub add_file {
@@ -293,6 +293,12 @@ sub get_campaign {
 	return $result;
 }
 
+sub get_campaigns {
+	my $self = shift;
+
+	return $self->_selectall_arrayref_hashes('SELECT * FROM campaigns');
+}
+
 sub get_campaign_files {
 	my ($self, $id) = @_;
 
@@ -302,6 +308,34 @@ sub get_campaign_files {
 
 	return $result;
 }
+
+sub remove_campaign {
+	my $self = shift;
+	my $id   = shift;
+
+	$self->dbh->begin_work;
+
+	$self->_run_query('DELETE FROM files WHERE campaign_id = ?', $id);
+	$self->_run_query('DELETE FROM campaigns WHERE id = ?', $id);
+
+	$self->dbh->commit;
+}
+
+sub remove_file {
+	my $self = shift;
+	my $id   = shift;
+
+	return $self->_run_query('DELETE FROM files WHERE id=?', $id);
+}
+
+sub update_file {
+	my $self = shift;
+	my $id   = shift;
+	my $file_details = shift;
+
+	return $self->_update_object('files', $file_details, {id => $id});
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;

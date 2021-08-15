@@ -24,7 +24,9 @@ our $program = fileparse ($PROGRAM_NAME);
 our $options = {
 	backup_dir  => $DEFAULT_BACKUP_DIR,
 	config_file => $DEFAULT_CONFIG_FILE,
-	verbose     => 0,
+	debug       => 0,
+	stdout      => 0,
+	trace       => 0,
 };
 
 our $config = {};
@@ -33,15 +35,28 @@ sub main {
 	GetOptions(
 		'backup_dir|b:s'  => \$options->{backup_dir},
 		'config_file|c:s' => \$options->{config_file},
-		'verbose|v'       => \$options->{verbose},
+		'debug|v'         => \$options->{debug},
+		'stdout|s'        => \$options->{stdout},
+		'trace|vv'        => \$options->{trace},
 		'help|usage|?'    => sub { usage(); }
 	);
 
-	Log::Log4perl->easy_init({
-		level  => $options->{verbose} ? $TRACE : $INFO,
-		file   => ">>$RealBin/../log/fg-backup.log",
+	my $logfile = sprintf("%s/backup.log", $options->{backup_dir});
+
+	my $log_options = {
 		layout => '%d{ISO8601} [%5p] (%c) %m%n',
-	});
+		level  => $INFO,
+		file   => ">>$logfile",
+	};
+
+	if ($options->{trace} || $options->{debug}) {
+		$log_options->{level} = $options->{trace} ? $TRACE : $DEBUG;
+	}
+
+	$log_options->{file} = 'STDERR'
+		if $options->{stdout};
+
+	Log::Log4perl->easy_init($log_options);
 
 	# Capture and log all fatal errors to our own logger.
 
@@ -55,12 +70,12 @@ sub main {
 		die @_;       # Now really terminate.
 	};
 
-	# $SIG{__WARN__} = sub {
-	# 	local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
-	# 	WARN @_;
-	# };
+	$SIG{__WARN__} = sub {
+		local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
+		WARN @_;
+	};
 
-	TRACE "Loading config file: $options->{config_file}";
+	DEBUG "Loading config file: $options->{config_file}";
 
 	my $config_file = file($options->{config_file});
 
@@ -96,7 +111,11 @@ OPTIONS:
   -c|config_file  Location of JSON config file
                   default: $DEFAULT_CONFIG_FILE
 
-  -v|verbose      Provide more verbose output.
+  -s|stdout       Log to STDOUT rather than to a file
+
+  -v|debug        Provide more verbose output.
+
+  -vv|trace       Provide even more verbose output.
 
   -?|help|usage   This usage information
 

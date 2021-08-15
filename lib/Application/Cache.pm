@@ -45,11 +45,19 @@ sub get_campaign {
 	my $campaign = $self->db->get_campaign($name, $dir);
 
 	unless ($campaign) {
+		DEBUG sprintf("Not cached; Adding new campaign '%s'", $name);
+
 		$campaign = $self->db->add_campaign($name, $dir);
 		$dirty++;
 	}
 
 	return ($campaign, $dirty);
+}
+
+sub get_campaigns {
+	my $self = shift;
+
+	return $self->db->get_campaigns;
 }
 
 sub get_campaign_files {
@@ -63,6 +71,28 @@ sub get_campaign_files {
 	}
 
 	return $result;
+}
+
+sub remove_campaign {
+	my $self = shift;
+	my $id   = shift;
+
+	return $self->db->remove_campaign($id);
+}
+
+sub remove_file {
+	my $self = shift;
+	my $id   = shift;
+
+	return $self->db->remove_file($id);
+}
+
+sub update_file {
+	my $self = shift;
+	my $id   = shift;
+	my $file_details = shift;
+
+	return $self->db->update_file($id, $file_details);
 }
 
 __PACKAGE__->meta->make_immutable;

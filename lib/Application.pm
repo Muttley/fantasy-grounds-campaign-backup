@@ -2,7 +2,10 @@ package Application;
 
 use common::sense;
 
+use Archive::Zip;
+use Cwd;
 use Data::Dump qw(pp);
+use DateTime;
 use File::Find;
 use Log::Log4perl qw(:easy);
 use Path::Class;
@@ -34,18 +37,79 @@ has 'cache' => (
 	lazy => 1
 );
 
+has 'processed_campaigns' => (
+	is      => 'rw',
+	isa     => 'HashRef',
+	default => sub { return {} },
+);
+
+sub _backup_campaign {
+	my $self = shift;
+	my $campaign = shift;
+	my $version  = shift;
+
+	my $dt = DateTime->now;
+	my $datestamp = sprintf("%s%s", $dt->ymd(''), $dt->hms(''));
+
+	my $backup_dir = dir($self->backup_dir, $version);
+	$backup_dir->mkpath;
+
+	my $archive_base_name = lc $campaign->name;
+	$archive_base_name =~ s/\s+/_/g;
+	$archive_base_name =~ s/\(|\)//g;
+	$archive_base_name =~ s/\[|\]//g;
+
+	my $zip_filename = file(
+		$backup_dir, sprintf("%s__%s.zip", $archive_base_name, $datestamp)
+	)->stringify;
+
+	INFO "Backing up campaign to: $zip_filename";
+
+	my $cwd = getcwd;
+
+	my $zip = Archive::Zip->new;
+	chdir $campaign->dir;
+	$zip->addTree('.', $campaign->name);
+	$zip->writeToFileNamed($zip_filename);
+
+	chdir $cwd;
+}
+
+sub _clean_up_campaigns {
+	my $self = shift;
+
+	my $campaigns = $self->cache->get_campaigns;
+
+	for my $campaign (@{$campaigns}) {
+
+		unless ($self->processed_campaigns->{$campaign->{base_dir}}) {
+			INFO sprintf("Removing campaign from cache: %s", $campaign->{name});
+			$self->cache->remove_campaign($campaign->{id});
+		}
+	}
+}
 
 sub process {
-	my ($self, $dir) = @_;
+	my ($self, $dir, $version) = @_;
 
 	my $name = $dir->basename;
 
-	INFO sprintf("Checking campaign: %s", $dir->basename);
+	DEBUG sprintf("Checking campaign: %s", $dir->basename);
 
-	# my $campaign = $self->cache->get_campaign($dir->basename, $dir);
 	my $campaign = Application::Campaign->new({dir => $dir, cache => $self->cache})
 		->load
 		->check_files;
+
+	$self->processed_campaigns->{$dir} = $campaign;
+
+	if ($campaign->dirty) {
+		DEBUG "Campaign has been modified";
+		$self->_backup_campaign($campaign, $version);
+	}
+	else {
+		DEBUG "Campaign has not been modified";
+	}
+
 }
 
 sub run {
@@ -53,7 +117,7 @@ sub run {
 	INFO "Running";
 
 	for my $version (keys %{$self->config}) {
-		INFO "Checking $version campaigns";
+		DEBUG "Checking $version campaigns";
 
 		my $version_config = $self->config->{$version};
 
@@ -77,9 +141,11 @@ sub run {
 
 			next if $skip;
 
-			$self->process(dir($dir, $entry));
+			$self->process(dir($dir, $entry), $version);
 		}
 	}
+
+	$self->_clean_up_campaigns;
 }
 
 
