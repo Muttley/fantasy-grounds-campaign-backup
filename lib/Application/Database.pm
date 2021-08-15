@@ -1,8 +1,5 @@
 package Application::Database;
 
-use v5.20;
-use feature qw(signatures);
-
 use common::sense;
 
 use Data::Dump qw(pp);
@@ -13,6 +10,7 @@ use MIME::Base64 qw(encode_base64);
 use Moose;
 use Path::Class;
 use Scalar::Util qw(looks_like_number);
+use Path::Class;
 
 use Application::Database::Schema;
 use Application::Util qw(get_module_subs);
@@ -28,7 +26,8 @@ has 'data_dir' => (
 has 'dbh' => (
 	is  => 'ro',
 	lazy => 1,
-	default => sub ($self) {
+	default => sub {
+		my $self = shift;
 		my $filename = $self->filename;
 		my $db_exists = (-e $filename);
 
@@ -126,7 +125,8 @@ has 'trace_db' => (
 	lazy     => 1
 );
 
-sub _insert_object ($self, $table, $object) {
+sub _insert_object {
+	my ($self, $table, $object) = @_;
 
 	my @fields;
 	my @values;
@@ -168,7 +168,8 @@ sub _insert_object ($self, $table, $object) {
 	return $new_object || undef;
 }
 
-sub _update_object ($self, $table, $object, $where) {
+sub _update_object {
+	my ($self, $table, $object, $where) = @_;
 
 	my @fields;
 	my @values;
@@ -201,7 +202,8 @@ sub _update_object ($self, $table, $object, $where) {
 	return $sth;
 }
 
-sub _run_query ($self, $statement, @values) {
+sub _run_query {
+	my ($self, $statement, @values) = @_;
 
 	my $sth = $self->dbh->prepare ($statement);
 
@@ -210,7 +212,8 @@ sub _run_query ($self, $statement, @values) {
 	return $sth;
 }
 
-sub _selectall_arrayref ($self, $statement, @values) {
+sub _selectall_arrayref {
+	my ($self, $statement, @values) = @_;
 
 	my $result = $self->dbh->selectall_arrayref(
 		$statement,
@@ -221,7 +224,8 @@ sub _selectall_arrayref ($self, $statement, @values) {
 	return $result || [];
 }
 
-sub _selectall_arrayref_hashes ($self, $statement, @values) {
+sub _selectall_arrayref_hashes {
+	my ($self, $statement, @values) = @_;
 
 	my $result = $self->dbh->selectall_arrayref(
 		$statement,
@@ -232,7 +236,8 @@ sub _selectall_arrayref_hashes ($self, $statement, @values) {
 	return $result || [];
 }
 
-sub _selectone_arrayref_hashes ($self, $statement, @values) {
+sub _selectone_arrayref_hashes {
+	my ($self, $statement, @values) = @_;
 
 	my $result = $self->_selectall_arrayref_hashes(
 		$statement, @values
@@ -241,7 +246,14 @@ sub _selectone_arrayref_hashes ($self, $statement, @values) {
 	return $result;
 }
 
-sub add_campaign ($self, $name, $dir) {
+sub add_file {
+	my ($self, $file_details) = @_;
+
+	return $self->_insert_object('files', $file_details);
+}
+
+sub add_campaign {
+	my ($self, $name, $dir) = @_;
 
 	my $result = $self->_insert_object(
 		'campaigns',
@@ -254,7 +266,8 @@ sub add_campaign ($self, $name, $dir) {
 	return $result;
 }
 
-sub backup ($self, $filename) {
+sub backup {
+	my ($self, $filename) = @_;
 
 	unless ($filename) {
 		my $dt = DateTime->now;
@@ -269,15 +282,26 @@ sub backup ($self, $filename) {
 	$self->dbh->sqlite_backup_to_file ($filename);
 }
 
-sub get_campaign ($self, $name) {
+sub get_campaign {
+	my ($self, $name, $dir) = @_;
 
 	my $result = $self->_selectone_arrayref_hashes(
-		'SELECT * FROM campaigns WHERE name=?', $name
+		'SELECT * FROM campaigns WHERE name=? AND base_dir=?',
+		$name, $dir
 	);
 
 	return $result;
 }
 
+sub get_campaign_files {
+	my ($self, $id) = @_;
+
+	my $result = $self->_selectall_arrayref_hashes(
+		'SELECT * FROM files WHERE campaign_id=?', $id
+	);
+
+	return $result;
+}
 __PACKAGE__->meta->make_immutable;
 
 1;

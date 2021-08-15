@@ -1,8 +1,5 @@
 package Application::Cache;
 
-use v5.20;
-use feature qw(signatures);
-
 use common::sense;
 
 use Data::Dump qw(pp);
@@ -33,15 +30,39 @@ has 'db' => (
 	lazy => 1
 );
 
-sub get_campaign ($self, $name, $dir) {
+sub add_file {
+	my $self = shift;
+	my $file_details = shift;
 
-	my $campaign = $self->db->get_campaign($name);
+	return $self->db->add_file($file_details);
+}
+
+sub get_campaign {
+	my ($self, $name, $dir) = @_;
+
+	my $dirty = 0;
+
+	my $campaign = $self->db->get_campaign($name, $dir);
 
 	unless ($campaign) {
-		$campaign = $self->db->add_campaign($name, $dir)
+		$campaign = $self->db->add_campaign($name, $dir);
+		$dirty++;
 	}
 
-	return $campaign;
+	return ($campaign, $dirty);
+}
+
+sub get_campaign_files {
+	my ($self, $id) = @_;
+
+	my $files = $self->db->get_campaign_files($id) || [];
+
+	my $result = {};
+	for my $file (@{$files}) {
+		$result->{$file->{file_path}} = $file
+	}
+
+	return $result;
 }
 
 __PACKAGE__->meta->make_immutable;

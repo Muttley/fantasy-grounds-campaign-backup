@@ -14,7 +14,7 @@ use Path::Class;
 use JSON::XS;
 use Log::Log4perl qw(:easy);
 
-use Application::Backup;
+use Application;
 
 Readonly our $DEFAULT_CONFIG_FILE => "$RealBin/../conf/config.json";
 Readonly our $DEFAULT_BACKUP_DIR  => 'S:\Dropbox\Games\Role-Playing Games\.Campaigns\.backups';
@@ -74,7 +74,7 @@ sub main {
 		usage();
 	}
 
-	Application::Backup->new({
+	Application->new({
 		backup_dir => dir($options->{backup_dir}),
 		config     => $config,
 	})->run;
