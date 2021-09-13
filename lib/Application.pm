@@ -122,6 +122,27 @@ sub run {
 		my $version_config = $self->config->{$version};
 
 		my $dir = dir ($version_config->{Directory});
+
+		my @path_elements;
+		for my $element (@{$dir->{dirs}}) {
+			if ($^O eq 'MSWin32') {
+				if ($element =~ m/\%.*\%/) {
+					$element =~ s/^\%|\%$//g;
+					$element = $ENV{$element};
+				}
+			}
+			else {
+				if ($element =~ m/\$.*/) {
+					$element =~ s/^\$//;
+					$element = $ENV{$element};
+				}
+			}
+
+			push @path_elements, $element;
+		}
+
+		$dir = dir(@path_elements);
+
 		my $dh = $dir->open;
 
 		while (my $entry = $dh->read) {

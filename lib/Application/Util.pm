@@ -2,12 +2,17 @@ package Application::Util;
 
 use common::sense;
 
+use Data::Dump qw(pp);
 use Exporter;
-
-use Data::Dump qw(dump pp);
+use Path::Class;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw(get_module_subs);
+our @EXPORT = qw(base_dir get_module_subs);
+
+sub base_dir {
+	my $file = file(__FILE__);
+	return dir($file->dir, '../../')->resolve;
+}
 
 sub get_module_subs {  # get hashref of all coderefs in package
 	my $package = shift;

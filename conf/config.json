@@ -1,10 +1,10 @@
 {
 	"Fantasy Grounds": {
-		"Directory": "C:\\Users\\Muttley\\AppData\\Roaming\\Fantasy Grounds\\campaigns",
+		"Directory": "%APPDATA%\\Fantasy Grounds\\campaigns",
 		"DirectorySkipMatches": ["\\(test\\)$"]
 	},
 	"Fantasy Grounds Unity": {
-		"Directory": "C:\\Users\\Muttley\\AppData\\Roaming\\SmiteWorks\\Fantasy Grounds\\campaigns",
+		"Directory": "%APPDATA%\\SmiteWorks\\Fantasy Grounds\\campaigns",
 		"DirectorySkipMatches": ["\\(test\\)$"]
 	}
 }

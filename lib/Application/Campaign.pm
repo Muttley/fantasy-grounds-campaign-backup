@@ -6,7 +6,7 @@ use feature qw(signatures);
 use common::sense;
 
 use Data::Dump qw(pp);
-use Digest::SHA1 qw(sha1_hex);
+use Digest::SHA qw(sha1_hex);
 use File::Find;
 use Log::Log4perl qw(:easy);
 use Moose;
