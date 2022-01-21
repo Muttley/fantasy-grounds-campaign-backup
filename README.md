@@ -7,7 +7,7 @@ Tool for backing up folder based RPG campaigns from VTTs like Fantasy Grounds or
 ~~~
 campaign-backup.pl
 
-  Tool for backing up Fantasy Grounds campaign data
+  Tool for backing up folder based RPG campaign data
 
 OPTIONS:
 
