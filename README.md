@@ -1,6 +1,6 @@
 # Fantasy Grounds: Campaign Backup Tool
 
-Tool for backing up Fantasy Grounds campaigns
+Tool for backing up folder based RPG campaigns from VTTs like Fantasy Grounds or Foundry VTT, etc.
 
 ## Usage
 
